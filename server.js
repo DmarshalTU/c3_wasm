@@ -31,7 +31,7 @@ async function login() {
 
         if (data.success) {
             sessionID = response.headers.get('set-cookie');
-            console.log('Logged in successfully, session ID:', sessionID);
+            // console.log('Logged in successfully, session ID:', sessionID);
         } else {
             console.error('Failed to log in:', data.msg);
         }

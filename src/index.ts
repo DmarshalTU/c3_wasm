@@ -1,6 +1,7 @@
 (async () => {
     const wasm = await WebAssembly.instantiateStreaming(fetch("web.wasm"));
     const { generate_id } = wasm.instance.exports as { generate_id: () => string };
+    const { generate_package_id } = wasm.instance.exports as { generate_package_id: () => string };
 
     interface Group {
         id: number;
@@ -142,6 +143,11 @@
             }
 
             const id = generate_id();
+            console.log("WASM: Test ID", id)
+
+            const package_id = generate_package_id()
+            console.log("WASM: Test Package ID", package_id)
+
 
             const userData = {
                 username,
