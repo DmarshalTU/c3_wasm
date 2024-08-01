@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Registration Form</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>User Registration</h1>
+        <form id="registration-form">
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="package-id">Package ID:</label>
+                <select id="package-id" name="package-id" required>
+                    <option value="">Select a package</option>
+                    <option value="0">0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    <option value="11">11</option>
+                    <option value="12">12</option>
+                    <option value="13">13</option>
+                    <option value="14">14</option>
+                    <option value="15">15</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="group-id">Group ID:</label>
+                <select id="group-id" name="group-id" required>
+                    <option value="">Select a group</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="total-gb">Total GB:</label>
+                <input type="number" id="total-gb" name="total-gb" required>
+            </div>
+            <div class="form-group">
+                <label for="expiry-time">Expiry Time (epoch ms):</label>
+                <input type="number" id="expiry-time" name="expiry-time" required>
+            </div>
+            <div class="form-group">
+                <label for="enable">Enable:</label>
+                <input type="checkbox" id="enable" name="enable">
+            </div>
+            <button type="submit">Register</button>
+        </form>
+    </div>
+    <script src="index.js"></script>
+</body>
+</html>

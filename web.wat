@@ -1,0 +1,12 @@
+(module $web.wasm
+  (type (;0;) (func (result i32)))
+  (func $generate_id (type 0) (result i32)
+    i32.const 1024)
+  (func $generate_package_id (type 0) (result i32)
+    i32.const 123)
+  (memory (;0;) 2)
+  (global $__stack_pointer (mut i32) (i32.const 66608))
+  (export "memory" (memory 0))
+  (export "generate_id" (func $generate_id))
+  (export "generate_package_id" (func $generate_package_id))
+  (data $.rodata (i32.const 1024) "18852111-b145-4c29-85c5-17f5fb8ce41a\00"))

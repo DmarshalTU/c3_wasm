@@ -1,0 +1,36 @@
+version: '3'
+
+dotenv: ['.env']
+
+tasks:
+  all:
+    cmds:
+      - task: build
+      - task: wat
+      - task: server
+    silent: true
+
+  wat:
+    cmds:
+      - wasm2wat public/web.wasm > web.wat
+    silent: true
+
+  build:
+    cmds:
+      - c3c compile -O3 --reloc=none --target wasm32 -g0 --link-libc=no --use-stdlib=no --no-entry -o public/web web.c3
+    silent: true
+  
+  watch:
+    cmds:
+      - ./node_modules/.bin/tsc -w
+    silent: true
+
+  server:
+    cmds:
+      - node server.js
+    silent: true
+  
+  git:
+    cmds:
+      - git add .
+      - git commit -m {{.CLI_ARGS}}
