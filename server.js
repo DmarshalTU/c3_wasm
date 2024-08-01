@@ -11,6 +11,7 @@ let sessionID = '';
 
 app.use(express.json());
 app.use(express.static('public'));
+app.use('/dist', express.static('dist'));
 
 // Login to get session ID
 async function login() {
@@ -30,7 +31,7 @@ async function login() {
 
         if (data.success) {
             sessionID = response.headers.get('set-cookie');
-            // console.log('Logged in successfully, session ID:', sessionID);
+            console.log('Logged in successfully, session ID:', sessionID);
         } else {
             console.error('Failed to log in:', data.msg);
         }
@@ -56,7 +57,6 @@ app.get('/groups', async (req, res) => {
         const data = await response.json();
 
         if (response.ok) {
-            // console.log('Fetched groups:', data);
             res.json(data);
         } else {
             console.error('Error fetching groups:', data);
@@ -68,6 +68,59 @@ app.get('/groups', async (req, res) => {
     }
 });
 
+// Endpoint to fetch clients by inbound ID
+app.get('/clients/:inboundId', async (req, res) => {
+    const { inboundId } = req.params;
+    try {
+        const response = await fetch(`${process.env.ENDPOINT}/panel/api/inbounds/get/${inboundId}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Cookie': sessionID
+            }
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            res.json(data);
+        } else {
+            console.error(`Error fetching clients for inbound ${inboundId}:`, data);
+            res.status(500).send(`Error fetching clients for inbound ${inboundId}`);
+        }
+    } catch (error) {
+        console.error(`Network error fetching clients for inbound ${inboundId}:`, error);
+        res.status(500).send(`Network error fetching clients for inbound ${inboundId}`);
+    }
+});
+
+// Endpoint to fetch client traffic by client ID
+app.get('/clientTraffic/:clientId', async (req, res) => {
+    const { clientId } = req.params;
+    try {
+        const response = await fetch(`${process.env.ENDPOINT}/panel/api/inbounds/getClientTrafficsById/${clientId}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Cookie': sessionID
+            }
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            res.json(data);
+        } else {
+            console.error(`Error fetching traffic for client ${clientId}:`, data);
+            res.status(500).send(`Error fetching traffic for client ${clientId}`);
+        }
+    } catch (error) {
+        console.error(`Network error fetching traffic for client ${clientId}:`, error);
+        res.status(500).send(`Network error fetching traffic for client ${clientId}`);
+    }
+});
+
+// Existing registration endpoint
 app.post('/register', async (req, res) => {
     const { username, packageId, email, totalGB, expiryTime, enable, groupId } = req.body;
     const clientId = uuidv4();
@@ -111,9 +164,6 @@ app.post('/register', async (req, res) => {
         });
 
         const text = await apiResponse.text();
-
-        // console.log('API response status:', apiResponse.status);
-        // console.log('API response headers:', apiResponse.headers.raw());
         console.log('API response body:', text);
 
         try {
@@ -133,6 +183,126 @@ app.post('/register', async (req, res) => {
         return res.status(500).send('Network error');
     }
 });
+
+// New endpoint to update the dashboard
+app.get('/updateDashboard', async (req, res) => {
+    try {
+        const groups = await fetchGroups();
+
+        let dashboardHtml = '<div id="dashboard" class="dashboard-container">';
+
+        for (const group of groups) {
+            dashboardHtml += `<div class="group"><h2>${group.remark} (ID: ${group.id})</h2>`;
+
+            const clients = await fetchClients(group.id);
+            if (clients.length > 0) {
+                dashboardHtml += '<ul>';
+                for (const client of clients) {
+                    const traffic = await fetchClientTraffic(client.id);
+                    if (traffic) {
+                        const formattedUp = formatBytes(traffic.up);
+                        const formattedDown = formatBytes(traffic.down);
+                        dashboardHtml += `<li>${client.email} - Up: ${formattedUp} Down: ${formattedDown}</li>`;
+                    } else {
+                        dashboardHtml += `<li>${client.email} - No traffic data</li>`;
+                    }
+                }
+                dashboardHtml += '</ul>';
+            } else {
+                dashboardHtml += '<p>No clients found</p>';
+            }
+
+            dashboardHtml += '</div>';
+        }
+
+        dashboardHtml += '</div>';
+
+        res.send(dashboardHtml);
+    } catch (error) {
+        console.error('Error updating dashboard:', error);
+        res.status(500).send('Error updating dashboard');
+    }
+});
+
+// Helper functions
+async function fetchGroups() {
+    try {
+        const response = await fetch(`${process.env.ENDPOINT}/panel/api/inbounds/list`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Cookie': sessionID
+            }
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+            return data.obj;
+        } else {
+            console.error('Error fetching groups:', data);
+            return [];
+        }
+    } catch (error) {
+        console.error('Network error fetching groups:', error);
+        return [];
+    }
+}
+
+async function fetchClients(inboundId) {
+    try {
+        const response = await fetch(`${process.env.ENDPOINT}/panel/api/inbounds/get/${inboundId}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Cookie': sessionID
+            }
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+            const settings = JSON.parse(data.obj.settings);
+            return settings.clients;
+        } else {
+            console.error(`Error fetching clients for inbound ${inboundId}:`, data);
+            return [];
+        }
+    } catch (error) {
+        console.error(`Network error fetching clients for inbound ${inboundId}:`, error);
+        return [];
+    }
+}
+
+async function fetchClientTraffic(clientId) {
+    try {
+        const response = await fetch(`${process.env.ENDPOINT}/panel/api/inbounds/getClientTrafficsById/${clientId}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Cookie': sessionID
+            }
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+            return data.obj[0] || null;
+        } else {
+            console.error(`Error fetching traffic for client ${clientId}:`, data);
+            return null;
+        }
+    } catch (error) {
+        console.error(`Network error fetching traffic for client ${clientId}:`, error);
+        return null;
+    }
+}
+
+function formatBytes(bytes) {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const dm = 2;
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}
 
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);

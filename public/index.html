@@ -1,21 +1,23 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Registration Form</title>
-    <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration and Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/htmx.org@1.6.1"></script>
 </head>
 <body>
-    <div class="container">
-        <h1>User Registration</h1>
-        <form id="registration-form">
+    <div class="main-container">
+        <form id="registration-form" class="form-container" hx-post="/register" hx-swap="none" hx-on="htmx:afterRequest: updateDashboard()">
+            <h1>Register User</h1>
             <div class="form-group">
                 <label for="username">Username:</label>
                 <input type="text" id="username" name="username" required>
             </div>
             <div class="form-group">
                 <label for="package-id">Package ID:</label>
-                <select id="package-id" name="package-id" required>
-                    <option value="">Select a package</option>
+                <select id="package-id" name="package-id">
                     <option value="0">0</option>
                     <option value="1">1</option>
                     <option value="2">2</option>
@@ -35,12 +37,6 @@
                 </select>
             </div>
             <div class="form-group">
-                <label for="group-id">Group ID:</label>
-                <select id="group-id" name="group-id" required>
-                    <option value="">Select a group</option>
-                </select>
-            </div>
-            <div class="form-group">
                 <label for="email">Email:</label>
                 <input type="email" id="email" name="email" required>
             </div>
@@ -49,16 +45,28 @@
                 <input type="number" id="total-gb" name="total-gb" required>
             </div>
             <div class="form-group">
-                <label for="expiry-time">Expiry Time (epoch ms):</label>
+                <label for="expiry-time">Expiry Time:</label>
                 <input type="number" id="expiry-time" name="expiry-time" required>
             </div>
             <div class="form-group">
                 <label for="enable">Enable:</label>
                 <input type="checkbox" id="enable" name="enable">
             </div>
-            <button type="submit">Register</button>
+            <div class="form-group">
+                <label for="group-id">Group:</label>
+                <select id="group-id" name="group-id">
+                    <!-- Options will be populated by JavaScript -->
+                </select>
+            </div>
+            <button type="submit" class="btn">Register</button>
         </form>
+        <div id="dashboard" class="dashboard-container" hx-get="/updateDashboard" hx-trigger="load, every 30s" hx-swap="outerHTML"></div>
     </div>
-    <script src="index.js"></script>
+    <script src="dist/index.js"></script>
+    <script>
+        function updateDashboard() {
+            htmx.trigger("#dashboard", "load");
+        }
+    </script>
 </body>
 </html>
