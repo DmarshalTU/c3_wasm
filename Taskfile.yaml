@@ -30,7 +30,8 @@ tasks:
       - node server.js
     silent: true
   
-  git:
+  commit:
     cmds:
-      - git add .
-      - git commit -m {{.CLI_ARGS}}
+      - sh -c 'echo "Enter commit description:"; read COMMIT_MSG; echo "$COMMIT_MSG" > .commitmsg; git add .; git commit -F .commitmsg; rm .commitmsg'
+    interactive: true
+    silent: false
