@@ -10,7 +10,6 @@ This project is a web application built using TypeScript, WebAssembly (WASM), an
 
 Ensure you have the following tools installed on your machine:
 
-- [Go](https://golang.org/doc/install) (for Task)
 - [Node.js](https://nodejs.org/) and npm
 - [C3 compiler](https://github.com/c3lang/c3c)
 
